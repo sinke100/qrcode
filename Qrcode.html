@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>QR Code Generator</title>
+    <style>
+      html {
+        --s: 37px; /* control the size */
+
+        --c: #0000, #4b5320 0.5deg 119.5deg, #0000 120deg;
+        --g1: conic-gradient(from 60deg at 56.25% calc(425% / 6), var(--c));
+        --g2: conic-gradient(from 180deg at 43.75% calc(425% / 6), var(--c));
+        --g3: conic-gradient(from -60deg at 50% calc(175% / 12), var(--c));
+        background: var(--g1), var(--g1) var(--s) calc(1.73 * var(--s)),
+          var(--g2), var(--g2) var(--s) calc(1.73 * var(--s)),
+          var(--g3) var(--s) 0, var(--g3) 0 calc(1.73 * var(--s)) #2b2e13;
+        background-size: calc(2 * var(--s)) calc(3.46 * var(--s));
+      }
+      body {
+        position: relative;
+      }
+      body,
+      main {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        /*background-color: #6daf8e;*/
+      }
+      main {
+        background-color: #667c4d;
+        border: #242322 3px solid;
+        border-radius: 1rem;
+        padding: 1rem 3rem 3rem 3rem;
+      }
+      body,
+      main,
+      h1 {
+        z-index: -1;
+      }
+      h1 {
+        color: #444c38;
+        font-size: x-large;
+        text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.8);
+        animation: slide 1s ease-in-out;
+      }
+      button {
+        all: unset;
+        background-color: brown;
+        color: antiquewhite;
+        border-radius: 1rem;
+        padding: 0.5rem;
+        height: 100%;
+      }
+      input {
+        all: unset;
+        font-size: 20px;
+        border-radius: 0.5rem;
+        background-color: #242322;
+        padding: 0.5rem;
+        color: antiquewhite;
+      }
+      input::placeholder {
+        color: antiquewhite;
+      }
+      ::selection {
+        color: #242322;
+      }
+      #res {
+        display: none;
+        margin-top: 2rem;
+        padding: 1rem;
+        border-radius: 1rem;
+        background-color: #667c4d;
+        border: #242322 3px solid;
+      }
+      @keyframes slide {
+        0% {
+          transform: translateY(300%);
+        }
+        100% {
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>QR Code Generator</h1>
+      <div>
+        <input
+          type="text"
+          id="text-input"
+          placeholder="Enter text and press Enter"
+        />
+      </div>
+    </main>
+    <div id="res"></div>
+    <script>
+      function generateQRCode() {
+        var res = document.getElementById("res");
+        res.innerHTML = "";
+        res.style.display = "none";
+        var inputText = document.getElementById("text-input").value;
+        var trimed = inputText.trim();
+        document.getElementById("text-input").value = "";
+        if (!trimed) {
+          return;
+        }
+        var qrCodeUrl =
+          "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" +
+          encodeURIComponent(trimed);
+
+        fetch(qrCodeUrl)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("QR code generation failed");
+            }
+            return response.blob();
+          })
+          .then((blob) => {
+            var qrImage = URL.createObjectURL(blob);
+            var img = document.createElement("img");
+            img.src = qrImage;
+            res.appendChild(img);
+            res.style.display = "block";
+          })
+          .catch((error) => {
+            var errorHeading = document.createElement("h2");
+            errorHeading.textContent = "QR code generation failed";
+            res.appendChild(errorHeading);
+            res.style.display = "block";
+          });
+      }
+      document
+        .getElementById("text-input")
+        .addEventListener("keydown", (event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            generateQRCode();
+          }
+        });
+    </script>
+  </body>
+</html>
